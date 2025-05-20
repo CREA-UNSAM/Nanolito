@@ -10,6 +10,10 @@ BluetoothSerial SerialBT;
 
 static bool btScanAsync = true;
 static bool btScanSync = true;
+bool inMessageIn = false;
+bool inMessageOut = false;
+String messageIn = "";
+String messageOut = "";
 
 void btAdvertisedDeviceFound(BTAdvertisedDevice *pDevice) {
   Serial.printf("Found a device asynchronously: %s\n", pDevice->toString().c_str());
@@ -23,11 +27,39 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.available()) {
-    SerialBT.write(Serial.read());
-  }
   if (SerialBT.available()) {
-    Serial.write(SerialBT.read());
+    inMessageIn = true;
+    char data = SerialBT.read();
+    if (data == '\n')
+    {
+      if(messageIn == "ping")
+      {
+        SerialBT.print("pong");
+      }
+
+      Serial.println(messageIn);
+      inMessageIn = false;
+      messageIn = "";
+    }
+    else
+    {
+      messageIn += String(data);
+    }
+  }
+
+  if (Serial.available()) {
+    inMessageOut = true;
+    char data = Serial.read();
+    if (data == '\n')
+    {
+      SerialBT.print(messageOut);
+      inMessageOut = false;
+      messageOut = "";
+    }
+    else
+    {
+      messageOut += String(data);
+    }
   }
   delay(20);
 }
