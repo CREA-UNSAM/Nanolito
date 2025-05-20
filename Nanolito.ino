@@ -15,6 +15,9 @@ bool inMessageOut = false;
 String messageIn = "";
 String messageOut = "";
 
+int sensores[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+unsigned long temp;
+
 void btAdvertisedDeviceFound(BTAdvertisedDevice *pDevice) {
   Serial.printf("Found a device asynchronously: %s\n", pDevice->toString().c_str());
 }
@@ -24,12 +27,29 @@ void setup() {
 
   SerialBT.begin("Nanolito");  //Bluetooth device name
   Serial.println("The device started, now you can pair it with bluetooth!");
+  temp = millis();
+}
+
+void sendSensorData()
+{
+  unsigned long t = millis();
+  if (t - temp > 1000)
+  {
+    String msg = "A";
+    for(int i{0}; i < 11; i++)
+    {
+      msg += String(random(1024)) + ":";
+    }
+    SerialBT.print(msg);
+    temp = t;
+  }
 }
 
 void loop() {
   if (SerialBT.available()) {
     inMessageIn = true;
     char data = SerialBT.read();
+    Serial.flush();
     if (data == '\n')
     {
       if(messageIn == "ping")
@@ -61,5 +81,6 @@ void loop() {
       messageOut += String(data);
     }
   }
+  sendSensorData();
   delay(20);
 }
