@@ -25,6 +25,9 @@ void processMessage(const String& message)
         pid.ki = getSplit(message, ':', 2).toFloat();
         pid.kd = getSplit(message, ':', 3).toFloat();
         break;
+      case 'b':
+        saveGlobals();
+        break;
       default:
         break;
     }

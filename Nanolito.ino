@@ -1,6 +1,8 @@
 #include <Globals.h>
 #include <Bluetooth.h>
-#include <WiFi.h>
+extern "C" {
+  #include "esp_wifi.h"
+}
 
 void IOHandleTask(void* params)
 {
@@ -8,14 +10,7 @@ void IOHandleTask(void* params)
   {
     Bluetooth::readBT();
 
-    Serial.print("kp: ");
-    Serial.print(pid.kp);
-    Serial.print("|ki: ");
-    Serial.print(pid.ki);
-    Serial.print("|kd: ");
-    Serial.println(pid.kd);
-
-    vTaskDelay(200 / portTICK_PERIOD_MS);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
 
@@ -29,10 +24,8 @@ void ControlTask(void* params)
 }
 
 void setup() {
-  WiFi.disconnect(true);
-  WiFi.mode(WIFI_OFF);
   Serial.begin(9600);
-
+  esp_wifi_deinit();
   loadGlobals();
   Bluetooth::setupBT();
 
