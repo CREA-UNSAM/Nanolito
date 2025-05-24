@@ -1,4 +1,6 @@
+#include <Globals.h>
 #include <Bluetooth.h>
+#include <WiFi.h>
 
 void IOHandleTask(void* params)
 {
@@ -6,7 +8,14 @@ void IOHandleTask(void* params)
   {
     Bluetooth::readBT();
 
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    Serial.print("kp: ");
+    Serial.print(pid.kp);
+    Serial.print("|ki: ");
+    Serial.print(pid.ki);
+    Serial.print("|kd: ");
+    Serial.println(pid.kd);
+
+    vTaskDelay(200 / portTICK_PERIOD_MS);
   }
 }
 
@@ -14,13 +23,17 @@ void ControlTask(void* params)
 {
   while(true)
   {
-
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
 void setup() {
+  WiFi.disconnect(true);
+  WiFi.mode(WIFI_OFF);
   Serial.begin(9600);
+
+  loadGlobals();
   Bluetooth::setupBT();
 
   xTaskCreatePinnedToCore(IOHandleTask, "IO", 4096, NULL, 1, NULL, 0);

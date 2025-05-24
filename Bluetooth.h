@@ -1,4 +1,5 @@
 #include <BluetoothSerial.h>
+#include <Commands.h>
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
@@ -33,7 +34,7 @@ namespace Bluetooth {
     unsigned long t = millis();
     if (t - temp > 1000)
     {
-      String msg = "A";
+      String msg = "B:";
       for(int i{0}; i < 11; i++)
       {
         msg += String(random(1024)) + ":";
@@ -53,8 +54,10 @@ namespace Bluetooth {
       {
         if(messageIn == "ping")
         {
-          SerialBT.print("pong");
+          SerialBT.print(getMessage('A'));
         }
+
+        processMessage(messageIn);
 
         Serial.println(messageIn);
         inMessageIn = false;
