@@ -4,7 +4,7 @@ extern "C" {
   #include "esp_wifi.h"
 }
 
-void IOHandleTask(void* params)
+void ioHandleTask(void* params)
 {
   while(true)
   {
@@ -14,7 +14,7 @@ void IOHandleTask(void* params)
   }
 }
 
-void ControlTask(void* params)
+void controlTask(void* params)
 {
   while(true)
   {
@@ -29,8 +29,8 @@ void setup() {
   loadGlobals();
   Bluetooth::setupBT();
 
-  xTaskCreatePinnedToCore(IOHandleTask, "IO", 4096, NULL, 1, NULL, 0);
-  xTaskCreatePinnedToCore(ControlTask, "PIDControl", 4096, NULL, 1, NULL, 1);
+  xTaskCreatePinnedToCore(ioHandleTask, "IO", 4096, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore(controlTask, "PIDControl", 4096, NULL, 1, NULL, 1);
 }
 
 void loop(){}
