@@ -1,12 +1,11 @@
 #include <Bluetooth.h>
 
-BluetoothSerial SerialBT;
+BluetoothSerial SerialBT();
 bool inMessageIn = false;
 bool inMessageOut = false;
 String messageIn = "";
 String messageOut = "";
 
-int sensores[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 unsigned long temp;
 
 void btAdvertisedDeviceFound(BTAdvertisedDevice *pDevice) 

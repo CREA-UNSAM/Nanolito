@@ -1,10 +1,16 @@
 #include <Globals.h>
 
+Status status = IDLE;
+bool debug = 
+
 PIDController pid;
 
 int vMax{};
 int vBase{};
 int vMin{};
+
+int sensores[] = {};
+double position{};
 
 bool lineType = WHITE;
 int weights[N_SENSORES] = {};
