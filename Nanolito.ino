@@ -4,17 +4,12 @@ extern "C" {
   #include "esp_wifi.h"
 }
 
-void readSensors() {
-  // Leer sensores analógicos
-  const uint8_t sensor_pins[] = {SENSOR_01, SENSOR_02, SENSOR_03, 
-                                SENSOR_04, SENSOR_05, SENSOR_06,
-                                SENSOR_07, SENSOR_08, SENSOR_09,
-                                SENSOR_10, SENSOR_11};
-  
+void readSensors() 
+{
   for(uint8_t i = 0; i < N_SENSORES; i++) {
-      uint16_t value = analogRead(sensor_pins[i]);
+      uint16_t value = analogRead(sensorPins[i]);
 
-      sensores[i] = line_type ? (value > umbrals[i]) : (value <= umbrals[i]);
+      sensores[i] = lineType ? (value > umbrals[i]) : (value <= umbrals[i]);
   }
 }
 
@@ -75,6 +70,24 @@ void setup() {
   esp_wifi_deinit();
   loadGlobals();
   Bluetooth::setupBT();
+
+  for(int i{0}; i < N_SENSORES; i++)
+    pinMode(sensorPins[i], INPUT);
+
+  pinMode(BUTTON_01, INPUT);
+  pinMode(BUTTON_02, INPUT);
+
+  pinMode(LED_02, OUTPUT);
+  pinMode(LED_01, OUTPUT);
+  
+  pinMode(MOTOR_L_IN1, OUTPUT);
+  pinMode(MOTOR_L_IN2, OUTPUT);
+
+  pinMode(MOTOR_R_IN1, OUTPUT);
+  pinMode(MOTOR_R_IN2, OUTPUT);
+
+  ledcAttach(MOTOR_L_PWM, 20000, 8);
+  ledcAttach(MOTOR_R_PWM, 20000, 8);
 
   xTaskCreatePinnedToCore(ioHandleTask, "IO", 4096, NULL, 1, NULL, 0);
   xTaskCreatePinnedToCore(controlTask, "PIDControl", 4096, NULL, 1, NULL, 1);

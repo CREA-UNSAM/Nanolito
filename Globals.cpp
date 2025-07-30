@@ -1,7 +1,7 @@
 #include <Globals.h>
 
 Status status = IDLE;
-bool debug = 
+bool debug = true;
 
 PIDController pid;
 

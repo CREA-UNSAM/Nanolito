@@ -10,30 +10,31 @@
 
 enum Pins {
   // Motores
-  MOTOR_L_PWM = 31, 
-  MOTOR_L_IN1 = 36, 
-  MOTOR_L_IN2 = 37, 
-  MOTOR_R_PWM = 30,
-  MOTOR_R_IN1 = 33,
-  MOTOR_R_IN2 = 29,
+  MOTOR_L_PWM = 19, 
+  MOTOR_L_IN1 = 22, 
+  MOTOR_L_IN2 = 23, 
+  MOTOR_R_PWM = 18,
+  MOTOR_R_IN1 = 21,
+  MOTOR_R_IN2 = 5,
   
   // Sensores
-  SENSOR_01 = 11,
-  SENSOR_02 = 10,
-  SENSOR_03 = 9,
-  SENSOR_04 = 8,
-  SENSOR_05 = 7,
-  SENSOR_06 = 16,
-  SENSOR_07 = 14,
-  SENSOR_08 = 13,
-  SENSOR_09 = 12,
-  SENSOR_10 = 11,
-  SENSOR_11 = 24,
+  SENSOR_01 = 25,
+  SENSOR_02 = 33,
+  SENSOR_03 = 32,
+  SENSOR_04 = 35,
+  SENSOR_05 = 34,
+  SENSOR_06 = 13,
+  SENSOR_07 = 12,
+  SENSOR_08 = 14,
+  SENSOR_09 = 27,
+  SENSOR_10 = 26,
+  SENSOR_11 = 2,
   
-  LED_01 = 28, 
-  LED_02 = 27, 
-  BUTTON_01 = 25,
-  BUTTON_02 = 23 
+  LED_01 = 17, 
+  LED_02 = 16, 
+
+  BUTTON_01 = 4,
+  BUTTON_02 = 0
 };
 
 enum Status
@@ -42,6 +43,11 @@ enum Status
   RUN,
   CALIBRATION
 };
+
+const uint8_t sensorPins[] = {SENSOR_01, SENSOR_02, SENSOR_03, 
+                              SENSOR_04, SENSOR_05, SENSOR_06,
+                              SENSOR_07, SENSOR_08, SENSOR_09,
+                              SENSOR_10, SENSOR_11};
 
 extern Status status;
 extern bool debug;

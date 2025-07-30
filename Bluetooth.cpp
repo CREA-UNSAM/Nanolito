@@ -1,6 +1,10 @@
 #include <Bluetooth.h>
 
-BluetoothSerial SerialBT();
+const int RXD2 = 3;
+const int TXD2 = 1;
+
+//BluetoothSerial SerialBT;
+HardwareSerial espSerial(2);
 bool inMessageIn = false;
 bool inMessageOut = false;
 String messageIn = "";
@@ -8,15 +12,11 @@ String messageOut = "";
 
 unsigned long temp;
 
-void btAdvertisedDeviceFound(BTAdvertisedDevice *pDevice) 
-{
-  Serial.printf("Found a device asynchronously: %s\n", pDevice->toString().c_str());
-}
-
 void Bluetooth::setupBT() 
 {
-  SerialBT.begin("Nanolito");  //Bluetooth device name
+  //SerialBT.begin("Nanolito");  //Bluetooth device name
   Serial.println("The device started, now you can pair it with bluetooth!");
+  espSerial.begin(9600, SERIAL_8N1, RXD2, TXD2);
   temp = millis();
 }
 
@@ -26,26 +26,26 @@ void Bluetooth::sendSensorData()
   if (t - temp > 1000)
   {
     String msg = "B:";
-    for(int i{0}; i < 11; i++)
+    for(int i{0}; i < N_SENSORES; i++)
     {
-      msg += String(random(1024)) + ":";
+      msg += String(analogRead(sensorPins[i])) + ":";
     }
-    SerialBT.print(msg);
+    espSerial.print(msg);
     temp = t;
   }
 }
 
 void Bluetooth::readBT()
 {
-  if (SerialBT.available()) {
+  if (espSerial.available()) {
     inMessageIn = true;
-    char data = SerialBT.read();
+    char data = espSerial.read();
     Serial.flush();
     if (data == '\n')
     {
       if(messageIn == "ping")
       {
-        SerialBT.print(getMessage('A'));
+        espSerial.print(getMessage('A'));
       }
 
       processMessage(messageIn);
@@ -65,7 +65,7 @@ void Bluetooth::readBT()
     char data = Serial.read();
     if (data == '\n')
     {
-      SerialBT.print(messageOut);
+      espSerial.print(messageOut);
       inMessageOut = false;
       messageOut = "";
     }
