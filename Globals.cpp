@@ -1,16 +1,19 @@
 #include <Globals.h>
 
-Status status = IDLE;
+volatile Status status = IDLE;
 bool debug = true;
 
 PIDController pid;
+
+Motor leftMotor  = {MOTOR_L_PWM, MOTOR_L_IN1, MOTOR_L_IN2, 0};
+Motor rightMotor = {MOTOR_R_PWM, MOTOR_R_IN1, MOTOR_R_IN2, 0};
 
 int vMax{};
 int vBase{};
 int vMin{};
 
 int sensores[] = {};
-double position{};
+volatile double position{};
 
 bool lineType = WHITE;
 int weights[N_SENSORES] = {};
@@ -51,11 +54,11 @@ void saveGlobals()
   pref.putInt(VBASE_KEY.c_str(), vBase);
   pref.putInt(VMAX_KEY.c_str(), vMax);
 
-  pref.getBool(LINETYPE_KEY.c_str(), lineType);
+  pref.putBool(LINETYPE_KEY.c_str(), lineType);
 
   for(int i{0}; i < N_SENSORES; i++)
   {
-    pref.getInt((WEIGHT_KEY + String(i)).c_str(), weights[i]);
-    pref.getShort((UMBRAL_KEY + String(i)).c_str(), umbrals[i]);
+    pref.putInt((WEIGHT_KEY + String(i)).c_str(), weights[i]);
+    pref.putShort((UMBRAL_KEY + String(i)).c_str(), umbrals[i]);
   }
 }

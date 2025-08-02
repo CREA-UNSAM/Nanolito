@@ -38,7 +38,7 @@ void processMessage(const String& message)
     switch(comando)
     {
       case 'A':
-        return getAllValues();
+        return getAllValues() + "\n";
       default:
         return "";
     }

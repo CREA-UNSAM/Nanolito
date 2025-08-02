@@ -2,8 +2,8 @@
 
 #define GLOBALES
 
-#define WHITE true
-#define BLACK false
+#define WHITE false
+#define BLACK true
 
 #include <Arduino.h>
 #include <Preferences.h>
@@ -11,8 +11,8 @@
 enum Pins {
   // Motores
   MOTOR_L_PWM = 19, 
-  MOTOR_L_IN1 = 22, 
-  MOTOR_L_IN2 = 23, 
+  MOTOR_L_IN1 = 23, 
+  MOTOR_L_IN2 = 22, 
   MOTOR_R_PWM = 18,
   MOTOR_R_IN1 = 21,
   MOTOR_R_IN2 = 5,
@@ -37,6 +37,14 @@ enum Pins {
   BUTTON_02 = 0
 };
 
+struct Motor
+{
+  uint8_t pwm_pin;
+  uint8_t in1_pin;
+  uint8_t in2_pin;
+  int16_t speed;
+};
+
 enum Status
 {
   IDLE,
@@ -49,11 +57,16 @@ const uint8_t sensorPins[] = {SENSOR_01, SENSOR_02, SENSOR_03,
                               SENSOR_07, SENSOR_08, SENSOR_09,
                               SENSOR_10, SENSOR_11};
 
-extern Status status;
+extern Motor leftMotor;
+extern Motor rightMotor;
+
+extern volatile Status status;
 extern bool debug;
 
 const uint8_t N_SENSORES = 11; 
 const short PWM_IN_MAX = 4095;
+const int MOTOR_MIN_PWM = -255;
+const int MOTOR_MAX_PWM = 255;
 
 const String KP_KEY = "KP";
 const String KI_KEY = "KI";
@@ -81,7 +94,7 @@ extern int vBase;
 extern int vMin;
 
 extern int sensores[N_SENSORES];
-extern double position;
+extern volatile double position;
 
 extern bool lineType;
 extern int weights[N_SENSORES];
