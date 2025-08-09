@@ -15,7 +15,7 @@ void Bluetooth::setupBT()
   //Serial.println("The device started, now you can pair it with bluetooth!");
   //espSerial.begin(9600, SERIAL_8N1, RXD2, TXD2);
   temp = millis();
-  Serial.begin(115200);
+  Serial.begin(9600);
 }
 
 void Bluetooth::sendSensorData()

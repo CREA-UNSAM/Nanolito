@@ -134,13 +134,8 @@ void calibrationMovement()
 
   if(currentTime - timer >= MOVEMENT_TIME || timer == currentTime)
   {
-    digitalWrite(MOTOR_R_IN1, dir);
-    digitalWrite(MOTOR_R_IN2, !dir);
-    ledcWrite(MOTOR_R_PWM, CALIBRATION_SPEED);
-
-    digitalWrite(MOTOR_L_IN1, dir);
-    digitalWrite(MOTOR_L_IN2, !dir);
-    ledcWrite(MOTOR_L_PWM, CALIBRATION_SPEED);
+    setMotorSpeed(leftMotor,  dir ? 80 : -80);
+    setMotorSpeed(rightMotor,  dir ? 80 : -80);
 
     dir = !dir;
     movements++;
