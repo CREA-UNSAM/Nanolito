@@ -4,9 +4,11 @@ extern "C" {
   #include "esp_wifi.h"
 }
 
-hw_timer_t* runTimer = NULL;
-hw_timer_t* calibrateTimer = NULL;
-hw_timer_t* idleTimer = NULL;
+const uint32_t STATE_CHANGE_TIME = 1000;
+uint32_t runTimer = 0;
+uint32_t calibrateTimer = 0;
+bool startCalibrate = false;
+unsigned long idleTimer = 0;
 
 void readSensors() 
 {
@@ -30,7 +32,11 @@ double calculateLinePosition()
       contador++;
     }
   }
-  
+  if (contador == 0)
+  {
+    return 0.0;
+  }
+
   return (double)acumulador / (double)contador;
 }
 
@@ -51,6 +57,7 @@ void IRAM_ATTR onCalibrate()
   if(status != CALIBRATION)
   {
     status = CALIBRATION;
+    startCalibrate = true;
   }
   else
   {
@@ -72,29 +79,35 @@ void IRAM_ATTR onRun()
 
 void IRAM_ATTR handleButton01()
 {
+  uint32_t currentTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
   if(!digitalRead(BUTTON_01))
   {
-    timerAlarm(calibrateTimer, 1, false, 0);
-    timerWrite(calibrateTimer, 0);
-    timerStart(calibrateTimer);
+    calibrateTimer = currentTime;
   }
   else
   {
-    timerStop(calibrateTimer);
+    if (calibrateTimer - currentTime >= STATE_CHANGE_TIME)
+    {
+      onCalibrate();
+    }
+    calibrateTimer = 0;
   }
 }
 
 void IRAM_ATTR handleButton02()
 {
+  uint32_t currentTime = xTaskGetTickCountFromISR() * portTICK_PERIOD_MS;
   if(!digitalRead(BUTTON_02))
   {
-    timerAlarm(runTimer, 1, false, 0);
-    timerWrite(runTimer, 0);
-    timerStart(runTimer);
+    runTimer = currentTime;
   }
   else
   {
-    timerStop(runTimer);
+    if (runTimer - currentTime >= STATE_CHANGE_TIME)
+    {
+      onRun();
+    }
+    runTimer = 0;
   }
 }
 
@@ -128,14 +141,21 @@ void calibrationMovement()
   const int MOVEMENT_TIME = 200;
   const int CALIBRATION_SPEED = 150;
   static int movements = 0;
-  static unsigned long timer = millis();
+  static unsigned long timer{};
   static bool dir = false;
   unsigned long currentTime = millis();
 
+  if (startCalibrate)
+  {
+    timer = currentTime;
+    movements = 0;
+    startCalibrate = false;
+  }
+
   if(currentTime - timer >= MOVEMENT_TIME || timer == currentTime)
   {
-    setMotorSpeed(leftMotor,  dir ? 80 : -80);
-    setMotorSpeed(rightMotor,  dir ? 80 : -80);
+    setMotorSpeed(leftMotor,  dir ? 40 : -40);
+    setMotorSpeed(rightMotor,  dir ? 40 : -40);
 
     dir = !dir;
     movements++;
@@ -144,9 +164,36 @@ void calibrationMovement()
 
   if(movements >= MAX_MOVEMENTS * 2)
   {
+    saveGlobals();
     status = IDLE;
   }
 
+}
+
+void storeCalibrationData()
+{
+  static int calibrationMin[N_SENSORES] = {};
+  static int calibrationMax[N_SENSORES] = {};
+
+  if(startCalibrate)
+  {
+    for(int i = 0; i < N_SENSORES; i++)
+    {
+      calibrationMin[i] = analogRead(sensorPins[i]);
+      calibrationMax[i] = analogRead(sensorPins[i]);
+    }
+  }
+  else
+  {
+    for(int i = 0; i < N_SENSORES; i++)
+    {
+      int value = analogRead(sensorPins[i]);
+
+      calibrationMin[i] = min(calibrationMin[i], value);
+      calibrationMax[i] = max(calibrationMax[i], value);
+      umbrals[i] = (calibrationMin[i] + calibrationMax[i]) / 2;
+    }
+  }
 }
 
 void ioHandleTask(void* params)
@@ -192,8 +239,8 @@ void controlTask(void* params)
         if(inLine)
         {
           output = updatePID(position);
-          setMotorSpeed(leftMotor,  80 + output);
-          setMotorSpeed(rightMotor, 80 - output);
+          setMotorSpeed(leftMotor,  50 + output);
+          setMotorSpeed(rightMotor, 50 - output);
         }
         else
         {
@@ -204,9 +251,10 @@ void controlTask(void* params)
       case CALIBRATION:
         digitalWrite(LED_01, LOW);
         digitalWrite(LED_02, LOW);
-        //calibrationMovement();
-        setMotorSpeed(leftMotor,  0);
-        setMotorSpeed(rightMotor, 0);
+        storeCalibrationData();
+        calibrationMovement();
+        //setMotorSpeed(leftMotor,  0);
+        //setMotorSpeed(rightMotor, 0);
         break;
       default:
         break;
@@ -238,13 +286,6 @@ void setup() {
 
   ledcAttach(MOTOR_L_PWM, 20000, 8);
   ledcAttach(MOTOR_R_PWM, 20000, 8);
-
-  runTimer = timerBegin(1000000);
-  calibrateTimer = timerBegin(1000000);
-  
-  timerAttachInterrupt(runTimer, onRun);
-
-  timerAttachInterrupt(calibrateTimer, onCalibrate);
 
   attachInterrupt(BUTTON_01, handleButton01, CHANGE);
   attachInterrupt(BUTTON_02, handleButton02, CHANGE);
